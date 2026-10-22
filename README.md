@@ -101,16 +101,73 @@ Where:
 ```python
 
 
+import gymnasium as gym
+import numpy as np
+     
+
+# Create FrozenLake environment
+env = gym.make("FrozenLake-v1", map_name="4x4", is_slippery=True)
+     
+
+# Access the unwrapped environment to use the transition model
+env = env.unwrapped
+     
+
+# Number of states and actions
+n_states = env.observation_space.n
+n_actions = env.action_space.n
+     
+
+# Parameters
+gamma = 0.99
+theta = 1e-8
+     
+
+# Random policy: each action has equal probability
+policy = np.ones((n_states, n_actions)) / n_actions
+     
+
+from typing import Tuple
+import numpy as np
+
+# Initialize value function
+V = np.zeros(n_states)
+
 # -------------------------------------------------
 # Policy Evaluation Function
 # -------------------------------------------------
 
+def policy_evaluation(env, policy, gamma=0.99, theta=1e-8):
+  prev_V = np.zeros(len(policy))
+  iterations = 0
+  while True:
+    V = np.zeros(len(policy))
+    for s in range(len(policy)):
+      for a in range(env.action_space.n):
+        action_prob = policy[s][a]
+        for prob, next_state, reward, done in env.P[s][a]:
+          V[s] += action_prob * prob * (reward + gamma * prev_V[next_state] * (not done))
+    iterations += 1
+    if np.max(np.abs(prev_V - V)) < theta:
+      break
+    prev_V = V.copy()
+  return V, iterations
 
-# -------------------------------------------------
-# Display Output
-# -------------------------------------------------
+# Run policy evaluation
+V, iterations = policy_evaluation(env, policy, gamma, theta)
 
-# Change the parameters and observe the results
+print("Name: Aravind P")
+print("Register Number: 212224240015 ")
+print("Number of iterations:", iterations)
+print("\nState-Value Function:")
+print(V)
+
+print("Name: Aravind P ")
+print("Register Number: 212224240015 ")
+print("\nState-Value Function as 4x4 Grid:")
+print(np.round(V.reshape(4, 4), 4))
+
+env.close()
 
 ```
 
@@ -120,9 +177,22 @@ Where:
 
 ```text
 
-Number of Iterations: 
+Name: Aravind P
+Register Number: 212224240015 
+Number of iterations: 71
+
+State-Value Function:
+[0.0123561  0.01042443 0.01933841 0.00947773 0.01478703 0.
+ 0.03889444 0.         0.03260246 0.08433763 0.13781085 0.
+ 0.         0.17034482 0.43357944 0.        ]
+Name: Aravind P 
+Register Number: 212224240015 
 
 State-Value Function as 4x4 Grid:
+[[0.0124 0.0104 0.0193 0.0095]
+ [0.0148 0.     0.0389 0.    ]
+ [0.0326 0.0843 0.1378 0.    ]
+ [0.     0.1703 0.4336 0.    ]]
 
 
 
