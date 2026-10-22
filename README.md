@@ -228,7 +228,11 @@ Iterative policy evaluation was implemented successfully using the Gymnasium Fro
 ## Inference
 
 ```text
+For γ = 0.99, the state-value function is higher, indicating that future rewards have a greater influence on state values, and convergence takes 71 iterations.
 
+
+
+For γ = 0.69, the state values are generally lower due to greater discounting of future rewards, and convergence is faster, taking 26 iterations.
 
 
 ```
