@@ -197,7 +197,7 @@ env.close()
 ---
 
 ## Output
-<img width="673" height="415" alt="image" src="https://github.com/user-attachments/assets/c53c1c03-efee-4d36-b666-c6d6299f06f6" />
+<img width="697" height="388" alt="image" src="https://github.com/user-attachments/assets/a583d5b3-6b05-4f64-ba26-da6afc3949b9" />
 
 
 ---
