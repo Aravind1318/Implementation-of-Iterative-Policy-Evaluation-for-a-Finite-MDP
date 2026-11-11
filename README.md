@@ -100,70 +100,93 @@ Where:
 
 ```python
 
-
 import gymnasium as gym
 import numpy as np
-     
 
-# Create FrozenLake environment
-env = gym.make("FrozenLake-v1", map_name="4x4", is_slippery=True)
-     
+env = gym.make(
+    "FrozenLake-v1",
+    map_name="4x4",
+    is_slippery=True
+)
 
-# Access the unwrapped environment to use the transition model
 env = env.unwrapped
-     
 
-# Number of states and actions
 n_states = env.observation_space.n
 n_actions = env.action_space.n
-     
 
-# Parameters
 gamma = 0.99
 theta = 1e-8
-     
 
-# Random policy: each action has equal probability
 policy = np.ones((n_states, n_actions)) / n_actions
-     
-
-from typing import Tuple
-import numpy as np
-
-# Initialize value function
-V = np.zeros(n_states)
-
-# -------------------------------------------------
-# Policy Evaluation Function
-# -------------------------------------------------
 
 def policy_evaluation(env, policy, gamma=0.99, theta=1e-8):
-  prev_V = np.zeros(len(policy))
-  iterations = 0
-  while True:
-    V = np.zeros(len(policy))
-    for s in range(len(policy)):
-      for a in range(env.action_space.n):
-        action_prob = policy[s][a]
-        for prob, next_state, reward, done in env.P[s][a]:
-          V[s] += action_prob * prob * (reward + gamma * prev_V[next_state] * (not done))
-    iterations += 1
-    if np.max(np.abs(prev_V - V)) < theta:
-      break
-    prev_V = V.copy()
-  return V, iterations
+    
+    # Initialize value function
+    V = np.zeros(env.observation_space.n)
 
-# Run policy evaluation
-V, iterations = policy_evaluation(env, policy, gamma, theta)
+    iteration = 0
 
-print("Name: Aravind P")
-print("Register Number: 212224240015 ")
+    while True:
+        delta = 0
+
+        # Create a copy so that all states in this iteration
+        # use the previous value function
+        new_V = np.zeros_like(V)
+
+        # Evaluate every state
+        for s in range(env.observation_space.n):
+
+            v = 0
+
+            # Consider every possible action
+            for a in range(env.action_space.n):
+
+                # Probability of selecting action a
+                action_prob = policy[s, a]
+
+                # Environment transitions
+                for prob, next_state, reward, terminated in env.P[s][a]:
+
+                    # If the next state is terminal,
+                    # there is no future value
+                    future_value = 0 if terminated else V[next_state]
+
+                    v += action_prob * prob * (
+                        reward + gamma * future_value
+                    )
+
+            new_V[s] = v
+
+            # Track maximum change
+            delta = max(delta, abs(V[s] - new_V[s]))
+
+        # Update value function
+        V = new_V
+
+        iteration += 1
+
+        # Check convergence
+        if delta < theta:
+            break
+
+    return V, iteration
+
+
+V, iterations = policy_evaluation(
+    env,
+    policy,
+    gamma,
+    theta
+)
+
+print("Name: ARAVIND P")
+print("Register Number: 212224240015")
 print("Number of iterations:", iterations)
 print("\nState-Value Function:")
 print(V)
 
-print("Name: Aravind P ")
-print("Register Number: 212224240015 ")
+print("Name: ARAVIND P")
+print("Register Number: 212224240015")
 print("\nState-Value Function as 4x4 Grid:")
 print(np.round(V.reshape(4, 4), 4))
 
@@ -174,51 +197,10 @@ env.close()
 ---
 
 ## Output
+<img width="673" height="415" alt="image" src="https://github.com/user-attachments/assets/c53c1c03-efee-4d36-b666-c6d6299f06f6" />
 
-```text
----------------------------------------------------------
-gamma = 0.99
 
-Name: Aravind P
-Register Number: 212224240015 
-Number of iterations: 71
-
-State-Value Function:
-[0.0123561  0.01042443 0.01933841 0.00947773 0.01478703 0.
- 0.03889444 0.         0.03260246 0.08433763 0.13781085 0.
- 0.         0.17034482 0.43357944 0.        ]
-Name: Aravind P 
-Register Number: 212224240015 
-
-State-Value Function as 4x4 Grid:
-[[0.0124 0.0104 0.0193 0.0095]
- [0.0148 0.     0.0389 0.    ]
- [0.0326 0.0843 0.1378 0.    ]
- [0.     0.1703 0.4336 0.    ]]
-
-------------------------------------------------------------
-gamma = 0.69
-
-Name: Aravind P
-Register Number: 212224240015 
-Number of iterations: 26
-
-State-Value Function:
-[0.00049587 0.00065634 0.00265268 0.0006986  0.00122657 0.
- 0.01137027 0.         0.00538812 0.0246208  0.06326194 0.
- 0.         0.07407924 0.33074484 0.        ]
-Name: Aravind P 
-Register Number: 212224240015 
-
-State-Value Function as 4x4 Grid:
-[[0.0005 0.0007 0.0027 0.0007]
- [0.0012 0.     0.0114 0.    ]
- [0.0054 0.0246 0.0633 0.    ]
- [0.     0.0741 0.3307 0.    ]]
-
-```
 ---
-
 ## Result
 
 Iterative policy evaluation was implemented successfully using the Gymnasium FrozenLake environment. The state-value function for the fixed random policy was estimated using the Bellman expectation equation.
@@ -227,19 +209,16 @@ Iterative policy evaluation was implemented successfully using the Gymnasium Fro
 
 ## Inference
 
-```text
-For γ = 0.99, the state-value function is higher, indicating that future rewards have a greater influence on state values, and convergence takes 71 iterations.
+1.The value function converged in 46 iterations, showing that iterative policy evaluation successfully reached convergence under the fixed random policy.
 
+2.Hole states (5, 7, 11, and 12) and the goal state (15) have V = 0.0, as they are terminal states with no future rewards after the episode ends.
 
+3.State 14 has the highest value (0.4130) because it is adjacent to the goal and has the highest probability of receiving the reward.
 
-For γ = 0.69, the state values are generally lower due to greater discounting of future rewards, and convergence is faster, taking 26 iterations.
+4.The state values gradually increase as the agent moves closer to the goal, forming a clear value gradient across the 4×4 FrozenLake grid.
 
+5.States near the starting position have very low values, indicating that a random policy has a low probability of reaching the goal without falling into a hole.
 
-```
-
-
-
+6.Since is_slippery=True, the environment is stochastic, meaning the agent may move in unintended directions. This uncertainty lowers the expected value of most states compared to a deterministic environment.
 
 ---
-
-
